@@ -48,24 +48,36 @@ const defaultRates = {
     }
 };
 
-// Load rates from file or use defaults
+// Load rates from cache or file (for persistence across cold starts)
 async function loadRates() {
+    // If cache exists, use it
+    if (ratesCache) {
+        return ratesCache;
+    }
+    
+    // Try to load from file (for persistence)
     try {
         const data = await fs.readFile(RATES_FILE, 'utf8');
-        return JSON.parse(data);
+        ratesCache = JSON.parse(data);
+        return ratesCache;
     } catch (error) {
-        // File doesn't exist, create it with defaults
-        await saveRates(defaultRates);
-        return defaultRates;
+        // Use defaults and cache them
+        ratesCache = { ...defaultRates };
+        return ratesCache;
     }
 }
 
-// Save rates to file
+// Save rates to cache and file
 async function saveRates(rates) {
+    // Update cache
+    ratesCache = { ...rates };
+    
+    // Try to save to file (may fail on Vercel, but that's okay)
     try {
         await fs.writeFile(RATES_FILE, JSON.stringify(rates, null, 2), 'utf8');
     } catch (error) {
-        console.error('Error saving rates:', error);
+        // File write may fail on Vercel, but cache will work
+        console.log('Note: File write failed (expected on Vercel), using in-memory cache');
     }
 }
 
@@ -74,11 +86,18 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 let bot = null;
 let adminChatIds = new Set();
 
+// In-memory storage (will reset on cold start, but works for demo)
+// For production, use a database like MongoDB, Supabase, or Vercel KV
+let ratesCache = null;
+
 if (TELEGRAM_BOT_TOKEN) {
+    // Initialize bot without polling (webhook mode)
     bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: false });
     
-    // Webhook setup for Vercel (Telegram will send updates to /api/webhook)
-    // Note: For production, you'll need to set up a webhook URL
+    // Initialize rates cache with defaults
+    ratesCache = { ...defaultRates };
+    
+    console.log('Telegram bot initialized (webhook mode)');
 }
 
 // API Routes
@@ -113,9 +132,65 @@ app.post('/api/webhook', async (req, res) => {
         return res.status(503).json({ error: 'Bot not initialized' });
     }
     
-    const update = req.body;
-    await bot.processUpdate(update);
-    res.sendStatus(200);
+    try {
+        const update = req.body;
+        
+        // Handle webhook verification (Telegram sends this on setup)
+        if (update.message) {
+            await bot.processUpdate(update);
+        }
+        
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Webhook error:', error);
+        res.status(500).json({ error: 'Webhook processing failed' });
+    }
+});
+
+// Webhook info endpoint (to check webhook status)
+app.get('/api/webhook-info', async (req, res) => {
+    if (!bot || !TELEGRAM_BOT_TOKEN) {
+        return res.status(503).json({ error: 'Bot not initialized' });
+    }
+    
+    try {
+        const info = await bot.getWebHookInfo();
+        res.json({ success: true, webhook: info });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Set webhook endpoint (helper endpoint)
+app.post('/api/set-webhook', async (req, res) => {
+    if (!bot || !TELEGRAM_BOT_TOKEN) {
+        return res.status(503).json({ error: 'Bot not initialized' });
+    }
+    
+    try {
+        const { url } = req.body;
+        const webhookUrl = url || process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}/api/webhook`
+            : req.headers.host 
+                ? `https://${req.headers.host}/api/webhook`
+                : null;
+        
+        if (!webhookUrl) {
+            return res.status(400).json({ 
+                error: 'Webhook URL is required. Provide it in the request body or set VERCEL_URL environment variable.' 
+            });
+        }
+        
+        const result = await bot.setWebHook(webhookUrl);
+        res.json({ 
+            success: true, 
+            message: 'Webhook set successfully',
+            url: webhookUrl,
+            result 
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 // Telegram Bot Commands Handler
