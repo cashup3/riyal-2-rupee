@@ -1,0 +1,25 @@
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs').promises;
+const path = require('path');
+const TelegramBot = require('node-telegram-bot-api');
+
+const app = express();
+const PORT = 3000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static('.'));
+
+// Telegram Bot Token (you'll need to set this)
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || 'YOUR_BOT_TOKEN_HERE';
+
+// Initialize Telegram Bot
+let bot = null;
+if (TELEGRAM_BOT_TOKEN && TELEGRAM_BOT_TOKEN !== 'YOUR_BOT_TOKEN_HERE') {
+    bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
+}
+
+// ... rest of the file remains the same
+

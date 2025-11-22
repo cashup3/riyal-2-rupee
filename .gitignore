@@ -1,0 +1,17 @@
+node_modules/
+exchange-rates.json
+.env
+*.log
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+server.js
+extensions/
+projects/
+argv.json
+ide_state.json
+start-server.ps1
+
