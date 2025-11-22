@@ -293,6 +293,9 @@ if (bot) {
     });
 }
 
-// Export for Vercel
-module.exports = app;
+// Export for Vercel - handle all routes
+module.exports = (req, res) => {
+    // Handle the request with Express app
+    app(req, res);
+};
 
