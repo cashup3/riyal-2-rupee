@@ -121,10 +121,20 @@ const currencies = {
 // Current language
 let currentLang = localStorage.getItem('language') || 'en';
 
-// Function to get flag image URL
+// Function to get flag image URL with fallback
 function getFlagImageUrl(countryCode) {
-    return `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`;
+    // Use flagicons.lipis.dev which is more reliable
+    return `https://flagicons.lipis.dev/flags/4x3/${countryCode.toLowerCase()}.svg`;
 }
+
+// Fallback to emoji flags if images fail to load
+const flagEmojis = {
+    'AE': '🇦🇪',
+    'IR': '🇮🇷',
+    'PK': '🇵🇰',
+    'CN': '🇨🇳',
+    'EU': '🇪🇺'
+};
 
 // Get current currencies based on language
 function getCurrencies() {
@@ -289,8 +299,18 @@ function updateCurrencyDisplay(selector, flagElement, code, currencyCode) {
     const currencyListData = getCurrencies();
     const currency = currencyListData.find(c => c.code === currencyCode);
     if (currency) {
-        // Update flag image
-        flagElement.innerHTML = `<img src="${getFlagImageUrl(currency.countryCode)}" alt="${currency.name} flag" class="flag-img">`;
+        // Update flag image with error fallback
+        const img = document.createElement('img');
+        img.src = getFlagImageUrl(currency.countryCode);
+        img.alt = `${currency.name} flag`;
+        img.className = 'flag-img';
+        img.onerror = function() {
+            // Fallback to emoji if image fails to load
+            this.style.display = 'none';
+            flagElement.innerHTML = `<span class="flag-emoji">${flagEmojis[currency.countryCode] || '🏳️'}</span>`;
+        };
+        flagElement.innerHTML = '';
+        flagElement.appendChild(img);
         code.textContent = currencyCode;
     }
 }
@@ -347,13 +367,31 @@ function populateCurrencyList(filter = '') {
             option.classList.add('selected');
         }
         
-        option.innerHTML = `
-            <span class="currency-option-flag"><img src="${getFlagImageUrl(currency.countryCode)}" alt="${currency.name} flag" class="flag-img"></span>
-            <div class="currency-option-info">
-                <span class="currency-option-code">${currency.code}</span>
-                <span class="currency-option-name">${currency.name}</span>
-            </div>
+        const flagImg = document.createElement('img');
+        flagImg.src = getFlagImageUrl(currency.countryCode);
+        flagImg.alt = `${currency.name} flag`;
+        flagImg.className = 'flag-img';
+        flagImg.onerror = function() {
+            this.style.display = 'none';
+            const emoji = document.createElement('span');
+            emoji.className = 'flag-emoji';
+            emoji.textContent = flagEmojis[currency.countryCode] || '🏳️';
+            this.parentElement.replaceChild(emoji, this);
+        };
+        
+        const flagSpan = document.createElement('span');
+        flagSpan.className = 'currency-option-flag';
+        flagSpan.appendChild(flagImg);
+        
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'currency-option-info';
+        infoDiv.innerHTML = `
+            <span class="currency-option-code">${currency.code}</span>
+            <span class="currency-option-name">${currency.name}</span>
         `;
+        
+        option.appendChild(flagSpan);
+        option.appendChild(infoDiv);
         
         option.addEventListener('click', () => {
             if (activeSelector === 'from') {
