@@ -1,0 +1,11 @@
+node_modules/
+exchange-rates.json
+*.log
+.env
+.vscode/
+.idea/
+extensions/
+projects/
+argv.json
+ide_state.json
+

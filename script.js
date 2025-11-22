@@ -205,8 +205,10 @@ let exchangeRates = {
     },
 };
 
-// API endpoint (change to your server URL if different)
-const API_URL = 'http://localhost:3000/api/rates';
+// API endpoint (automatically detects if on Vercel or localhost)
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api/rates'
+    : '/api/rates';
 
 // Fetch exchange rates from API
 async function fetchExchangeRates() {
