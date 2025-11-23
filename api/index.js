@@ -82,6 +82,7 @@ async function saveRates(rates) {
 }
 
 // Initialize Telegram Bot
+// Note: On Vercel, you MUST set TELEGRAM_BOT_TOKEN as an environment variable
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 let bot = null;
 let adminChatIds = new Set();

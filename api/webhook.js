@@ -3,7 +3,8 @@ const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs').promises;
 const path = require('path');
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+// Telegram Bot Token - from environment variable or fallback for local dev
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || process.env.VERCEL ? null : '8512770089:AAHzZsJiDjM8q2-g5JZDOcvZnOLAbicyEoc';
 const RATES_FILE = path.join('/tmp', 'exchange-rates.json');
 
 const defaultRates = {
@@ -142,4 +143,5 @@ module.exports = async (req, res) => {
         res.status(500).json({ error: 'Webhook processing failed' });
     }
 };
+
 
