@@ -150,6 +150,12 @@ html[dir="rtl"] .features-grid {
     gap: 12px;
 }
 
+.logo-img {
+    width: 48px;
+    height: 48px;
+    display: block;
+}
+
 .logo-text {
     font-size: 20px;
     font-weight: 700;
