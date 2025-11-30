@@ -12,8 +12,8 @@ const RATES_FILE = path.join('/tmp', 'exchange-rates.json');
 
 const defaultRates = {
     AED: { TOM: 11500, PKR: 76.25, CNY: 1.98, EUR: 0.25 },
-    TOM: { AED: 0.000087, PKR: 0.0066, CNY: 0.00017, EUR: 0.000022 },
-    PKR: { AED: 0.013, TOM: 151, CNY: 0.026, EUR: 0.0033 },
+    TOM: { AED: 0.000087, PKR: 0.0025, CNY: 0.00017, EUR: 0.000022 },
+    PKR: { AED: 0.013, TOM: 400, CNY: 0.026, EUR: 0.0033 },
     CNY: { AED: 0.51, TOM: 5865, PKR: 38.46, EUR: 0.13 },
     EUR: { AED: 4.0, TOM: 46000, PKR: 303.05, CNY: 7.88 }
 };
@@ -65,5 +65,6 @@ module.exports = async (req, res) => {
         res.status(405).json({ error: 'Method not allowed' });
     }
 };
+
 
 

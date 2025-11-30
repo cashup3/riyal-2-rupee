@@ -191,13 +191,13 @@ let exchangeRates = {
     },
     TOM: { 
         AED: 0.000087,
-        PKR: 0.0066,
+        PKR: 0.0025,
         CNY: 0.00017,
         EUR: 0.000022
     },
     PKR: { 
         AED: 0.013,
-        TOM: 151,
+        TOM: 400,
         CNY: 0.026,
         EUR: 0.0033
     },
