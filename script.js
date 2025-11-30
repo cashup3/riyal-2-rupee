@@ -330,16 +330,16 @@ function calculateExchange() {
         rate = exchangeRates[fromCurrency]?.[toCurrency] || (1 / exchangeRates[toCurrency]?.[fromCurrency]);
     }
 
-    const fee = amount * FEE_PERCENTAGE;
-    const total = amount + fee;
     const converted = amount * rate;
+    const fee = converted * FEE_PERCENTAGE;
+    const total = converted + fee;
 
     // Update display
     toAmount.value = formatNumber(converted, toCurrency);
     
-    const fromSymbol = getCurrencySymbol(fromCurrency);
-    feeAmount.textContent = `${fromSymbol}${formatNumber(fee, fromCurrency)}`;
-    totalAmount.textContent = `${fromSymbol}${formatNumber(total, fromCurrency)}`;
+    const toSymbol = getCurrencySymbol(toCurrency);
+    feeAmount.textContent = `${toSymbol}${formatNumber(fee, toCurrency)}`;
+    totalAmount.textContent = `${toSymbol}${formatNumber(total, toCurrency)}`;
     
     // Update rate display (format rate based on currency)
     let rateDisplay = rate;
@@ -489,8 +489,6 @@ exchangeBtn.addEventListener('click', () => {
     }
     
     const toAmountValue = parseFormattedNumber(toAmount.value);
-    const fee = amount * FEE_PERCENTAGE;
-    const total = amount + fee;
     
     // Calculate current exchange rate for message
     let rate = 1;
@@ -504,6 +502,10 @@ exchangeBtn.addEventListener('click', () => {
         rateDisplay = rate.toFixed(4);
     }
     
+    // Calculate fee and total in "to" currency
+    const fee = toAmountValue * FEE_PERCENTAGE;
+    const total = toAmountValue + fee;
+    
     // Format the message in current language
     const currencyListData = getCurrencies();
     const fromCurrencyData = currencyListData.find(c => c.code === fromCurrency);
@@ -515,8 +517,8 @@ ${t('whatsapp.from')}: ${formatNumber(amount, fromCurrency)} ${fromCurrency} (${
 ${t('whatsapp.to')}: ${formatNumber(toAmountValue, toCurrency)} ${toCurrency} (${toCurrencyData.name})
 
 ${t('whatsapp.exchangeRate')}: 1 ${fromCurrency} = ${rateDisplay} ${toCurrency}
-${t('whatsapp.fee')}: ${getCurrencySymbol(fromCurrency)}${formatNumber(fee, fromCurrency)}
-${t('whatsapp.total')}: ${getCurrencySymbol(fromCurrency)}${formatNumber(total, fromCurrency)}
+${t('whatsapp.fee')}: ${getCurrencySymbol(toCurrency)}${formatNumber(fee, toCurrency)}
+${t('whatsapp.total')}: ${getCurrencySymbol(toCurrency)}${formatNumber(total, toCurrency)}
 
 ${t('whatsapp.processRequest')}`;
     
