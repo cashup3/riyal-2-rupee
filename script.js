@@ -248,6 +248,7 @@ const FEE_PERCENTAGE = 0.01;
 let fromCurrency = 'AED';
 let toCurrency = 'EUR';
 let activeSelector = null;
+let lastEditedField = 'from'; // Track which field was last edited
 
 // DOM elements
 const fromSelector = document.getElementById('from-selector');
@@ -317,26 +318,57 @@ function updateCurrencyDisplay(selector, flagElement, code, currencyCode) {
 
 // Calculate exchange
 function calculateExchange() {
-    const amount = parseFormattedNumber(fromAmount.value);
-    if (amount === 0 || isNaN(amount)) {
-        toAmount.value = '0.00';
-        feeAmount.textContent = '$0.00';
-        totalAmount.textContent = '$0.00';
-        return;
-    }
-
     let rate = 1;
     if (fromCurrency !== toCurrency) {
         rate = exchangeRates[fromCurrency]?.[toCurrency] || (1 / exchangeRates[toCurrency]?.[fromCurrency]);
     }
 
-    const converted = amount * rate;
-    const fee = converted * FEE_PERCENTAGE;
-    const total = converted + fee;
+    let converted, fee, total, fromAmountValue, toAmountValue;
+    
+    if (lastEditedField === 'from') {
+        // Calculate forward: from amount entered
+        fromAmountValue = parseFormattedNumber(fromAmount.value);
+        if (fromAmountValue === 0 || isNaN(fromAmountValue)) {
+            toAmount.value = '0.00';
+            feeAmount.textContent = '$0.00';
+            totalAmount.textContent = '$0.00';
+            return;
+        }
+        
+        converted = fromAmountValue * rate;
+        fee = converted * FEE_PERCENTAGE;
+        total = converted + fee;
+        
+        // Update to amount
+        toAmount.value = formatNumber(converted, toCurrency);
+    } else {
+        // Calculate backward: to amount entered (what they want to receive)
+        toAmountValue = parseFormattedNumber(toAmount.value);
+        if (toAmountValue === 0 || isNaN(toAmountValue)) {
+            fromAmount.value = '0.00';
+            feeAmount.textContent = '$0.00';
+            totalAmount.textContent = '$0.00';
+            return;
+        }
+        
+        // They want to receive toAmountValue, so fee is 1% of that
+        fee = toAmountValue * FEE_PERCENTAGE;
+        total = toAmountValue + fee;
+        
+        // Convert total back to from currency
+        // If rate is from->to, we need reverse rate (to->from)
+        let reverseRate = 1;
+        if (fromCurrency !== toCurrency) {
+            reverseRate = exchangeRates[toCurrency]?.[fromCurrency] || (1 / exchangeRates[fromCurrency]?.[toCurrency]);
+        }
+        fromAmountValue = total * reverseRate;
+        converted = toAmountValue;
+        
+        // Update from amount
+        fromAmount.value = formatNumber(fromAmountValue, fromCurrency);
+    }
 
     // Update display
-    toAmount.value = formatNumber(converted, toCurrency);
-    
     const toSymbol = getCurrencySymbol(toCurrency);
     feeAmount.textContent = `${toSymbol}${formatNumber(fee, toCurrency)}`;
     totalAmount.textContent = `${toSymbol}${formatNumber(total, toCurrency)}`;
@@ -447,6 +479,9 @@ swapBtn.addEventListener('click', () => {
     fromAmount.value = toAmount.value;
     toAmount.value = tempAmount;
     
+    // Swap the last edited field
+    lastEditedField = lastEditedField === 'from' ? 'to' : 'from';
+    
     calculateExchange();
 });
 
@@ -457,6 +492,18 @@ fromAmount.addEventListener('input', (e) => {
         value = parts[0] + '.' + parts.slice(1).join('');
     }
     e.target.value = value;
+    lastEditedField = 'from';
+    calculateExchange();
+});
+
+toAmount.addEventListener('input', (e) => {
+    let value = e.target.value.replace(/[^\d,.]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    e.target.value = value;
+    lastEditedField = 'to';
     calculateExchange();
 });
 
