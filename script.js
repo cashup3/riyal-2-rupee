@@ -241,8 +241,8 @@ async function fetchExchangeRates() {
 // Fetch rates every 30 seconds (initial fetch happens in initialization)
 setInterval(fetchExchangeRates, 30000); // Update every 30 seconds
 
-// Fee calculation (Wise-style: ~0.46% fee)
-const FEE_PERCENTAGE = 0.0046;
+// Fee calculation (1% fee)
+const FEE_PERCENTAGE = 0.01;
 
 // Current selections
 let fromCurrency = 'AED';
