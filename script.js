@@ -332,7 +332,7 @@ function calculateExchange() {
 
     const fee = amount * FEE_PERCENTAGE;
     const total = amount + fee;
-    const converted = (amount - fee) * rate;
+    const converted = amount * rate;
 
     // Update display
     toAmount.value = formatNumber(converted, toCurrency);
