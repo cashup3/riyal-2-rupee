@@ -47,6 +47,13 @@ const translations = {
             total: 'Total',
             processRequest: 'Please process this exchange.',
             invalidAmount: 'Please enter a valid amount'
+        },
+        liveRates: {
+            title: 'Live Exchange Rates',
+            live: 'LIVE',
+            loading: 'Loading rates...',
+            source: 'Source: Chande API',
+            updated: 'Updated'
         }
     },
     fa: {
@@ -96,6 +103,13 @@ const translations = {
             total: 'مجموع',
             processRequest: 'لطفا این تبدیل را انجام دهید.',
             invalidAmount: 'لطفا مبلغ معتبری وارد کنید'
+        },
+        liveRates: {
+            title: 'نرخ‌های زنده ارز',
+            live: 'زنده',
+            loading: 'در حال بارگذاری نرخ‌ها...',
+            source: 'منبع: Chande API',
+            updated: 'به‌روزرسانی شده'
         }
     }
 };
@@ -589,7 +603,141 @@ langSwitcher.addEventListener('click', () => {
     }
     // Recalculate and update display
     calculateExchange();
+    // Refresh live rates display with new language
+    if (liveRatesData && Object.keys(liveRatesData).length > 0) {
+        displayLiveRates();
+        updateRatesTime();
+    }
 });
+
+// Live Rates from Chande API
+const CHANDE_API_BASE = 'https://raw.githubusercontent.com/CertMusashi/Chande-api/main';
+let liveRatesData = {};
+let previousRates = {};
+
+async function fetchLiveRates() {
+    try {
+        // Fetch currencies.json from Chande-api
+        const response = await fetch(`${CHANDE_API_BASE}/currencies.json`, {
+            cache: 'no-cache'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch rates');
+        }
+        
+        const data = await response.json();
+        liveRatesData = data;
+        displayLiveRates();
+        updateRatesTime();
+    } catch (error) {
+        console.error('Error fetching live rates:', error);
+        displayLiveRatesError();
+    }
+}
+
+function displayLiveRates() {
+    const ratesList = document.getElementById('live-rates-list');
+    if (!ratesList) return;
+    
+    // Get our supported currencies
+    const supportedCurrencies = getCurrencies();
+    const baseCurrency = 'AED'; // Use AED as base
+    
+    ratesList.innerHTML = '';
+    
+    // Display rates for our supported currencies
+    supportedCurrencies.forEach(currency => {
+        if (currency.code === baseCurrency) return;
+        
+        const rate = getRateFromChandeData(baseCurrency, currency.code);
+        if (rate === null) return;
+        
+        const rateItem = document.createElement('div');
+        rateItem.className = 'rate-item';
+        
+        // Calculate change (simple comparison)
+        const prevRate = previousRates[currency.code];
+        const change = prevRate ? ((rate - prevRate) / prevRate * 100) : 0;
+        const changeClass = change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral';
+        const changeSymbol = change > 0 ? '+' : '';
+        
+        rateItem.innerHTML = `
+            <div class="rate-currency">
+                <div class="flag-icon">
+                    <img src="${getFlagImageUrl(currency.countryCode)}" alt="${currency.name} flag" class="rate-flag" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'rate-flag-emoji\'>${flagEmojis[currency.countryCode] || '🏳️'}</span>'">
+                </div>
+                <div>
+                    <div class="rate-code">${currency.code}</div>
+                    ${prevRate ? `<div class="rate-change ${changeClass}">${changeSymbol}${change.toFixed(2)}%</div>` : ''}
+                </div>
+            </div>
+            <div class="rate-value">${rate >= 1 ? formatNumber(rate) : rate.toFixed(4)}</div>
+        `;
+        
+        ratesList.appendChild(rateItem);
+    });
+    
+    // Store current rates for next comparison
+    supportedCurrencies.forEach(currency => {
+        if (currency.code !== baseCurrency) {
+            const rate = getRateFromChandeData(baseCurrency, currency.code);
+            if (rate !== null) {
+                previousRates[currency.code] = rate;
+            }
+        }
+    });
+}
+
+function getRateFromChandeData(from, to) {
+    // Try to find rate in Chande data structure
+    // The structure might vary, so we'll try multiple approaches
+    if (!liveRatesData || typeof liveRatesData !== 'object') return null;
+    
+    // Try direct path: data[from][to]
+    if (liveRatesData[from] && liveRatesData[from][to]) {
+        return liveRatesData[from][to];
+    }
+    
+    // Try reverse: 1 / data[to][from]
+    if (liveRatesData[to] && liveRatesData[to][from]) {
+        return 1 / liveRatesData[to][from];
+    }
+    
+    // Try using our exchange rates as fallback
+    if (exchangeRates[from] && exchangeRates[from][to]) {
+        return exchangeRates[from][to];
+    }
+    
+    return null;
+}
+
+function displayLiveRatesError() {
+    const ratesList = document.getElementById('live-rates-list');
+    if (!ratesList) return;
+    
+    ratesList.innerHTML = `
+        <div class="rate-item loading">
+            <span class="rate-loading">${t('liveRates.loading')}</span>
+        </div>
+    `;
+}
+
+function updateRatesTime() {
+    const updateTimeEl = document.getElementById('rates-update-time');
+    if (!updateTimeEl) return;
+    
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString(currentLang === 'fa' ? 'fa-IR' : 'en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    updateTimeEl.textContent = `${t('liveRates.updated')}: ${timeStr}`;
+}
+
+// Fetch live rates on load and every 30 seconds
+fetchLiveRates();
+setInterval(fetchLiveRates, 30000); // Update every 30 seconds
 
 // Initialize
 updateTranslations();

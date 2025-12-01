@@ -33,8 +33,31 @@
                 <p class="hero-subtitle" data-i18n="hero.subtitle">Join over 16 million people who get the real exchange rate. We're up to 8x cheaper than banks.</p>
             </div>
 
-            <div class="calculator-container">
-                <div class="calculator-card">
+            <div class="exchange-wrapper">
+                <!-- Live Rates Display -->
+                <div class="live-rates-container">
+                    <div class="live-rates-card">
+                        <div class="live-rates-header">
+                            <h3 class="live-rates-title" data-i18n="liveRates.title">Live Exchange Rates</h3>
+                            <div class="live-indicator">
+                                <span class="live-dot"></span>
+                                <span class="live-text" data-i18n="liveRates.live">LIVE</span>
+                            </div>
+                        </div>
+                        <div class="rates-list" id="live-rates-list">
+                            <div class="rate-item loading">
+                                <span class="rate-loading" data-i18n="liveRates.loading">Loading rates...</span>
+                            </div>
+                        </div>
+                        <div class="rates-footer">
+                            <span class="rates-source" data-i18n="liveRates.source">Source: Chande API</span>
+                            <span class="rates-update-time" id="rates-update-time"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calculator-container">
+                    <div class="calculator-card">
                     <div class="currency-row from-currency-row">
                         <div class="currency-label-group">
                             <label class="currency-label" data-i18n="calculator.amount">Amount</label>
@@ -112,6 +135,7 @@
                         <!-- Populated by JavaScript -->
                     </div>
                 </div>
+            </div>
             </div>
         </section>
 

@@ -265,11 +265,189 @@ html[dir="rtl"] .features-grid {
     margin: 0 auto;
 }
 
+/* Exchange Wrapper */
+.exchange-wrapper {
+    display: flex;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: flex-start;
+}
+
+/* Live Rates Container */
+.live-rates-container {
+    flex: 0 0 380px;
+    position: sticky;
+    top: 100px;
+}
+
+.live-rates-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 185, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.live-rates-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--wise-border);
+}
+
+.live-rates-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--wise-text);
+    margin: 0;
+}
+
+.live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--wise-success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
+
+.live-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--wise-success);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rates-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.rate-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--wise-border-light);
+    transition: background-color 0.2s ease;
+}
+
+.rate-item:last-child {
+    border-bottom: none;
+}
+
+.rate-item:hover {
+    background-color: var(--wise-bg-light);
+    margin: 0 -12px;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.rate-item.loading {
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.rate-loading {
+    color: var(--wise-text-secondary);
+    font-size: 14px;
+}
+
+.rate-currency {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rate-flag {
+    width: 24px;
+    height: 18px;
+    border-radius: 2px;
+    object-fit: cover;
+}
+
+.rate-flag-emoji {
+    font-size: 20px;
+}
+
+.rate-code {
+    font-weight: 600;
+    color: var(--wise-text);
+    font-size: 14px;
+}
+
+.rate-value {
+    font-weight: 600;
+    color: var(--wise-text);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+}
+
+.rate-change {
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.rate-change.positive {
+    color: var(--wise-success);
+}
+
+.rate-change.negative {
+    color: var(--wise-error);
+}
+
+.rate-change.neutral {
+    color: var(--wise-text-secondary);
+}
+
+.rates-footer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--wise-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--wise-text-light);
+}
+
+.rates-source {
+    font-weight: 500;
+}
+
+.rates-update-time {
+    color: var(--wise-text-secondary);
+}
+
 /* Calculator */
 .calculator-container {
     position: relative;
+    flex: 1;
     max-width: 640px;
-    margin: 0 0 0 auto;
+    margin: 0;
 }
 
 .calculator-card {
@@ -715,6 +893,43 @@ html[dir="rtl"] .features-grid {
 }
 
 /* Responsive Design */
+/* RTL Support for Live Rates */
+html[dir="rtl"] .exchange-wrapper {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .live-rates-header {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .rate-item {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .rates-footer {
+    flex-direction: row-reverse;
+}
+
+@media (max-width: 1200px) {
+    .exchange-wrapper {
+        flex-direction: column;
+        gap: 24px;
+    }
+    
+    .live-rates-container {
+        flex: 1;
+        position: static;
+        width: 100%;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+    
+    .calculator-container {
+        max-width: 640px;
+        margin: 0 auto;
+    }
+}
+
 @media (max-width: 768px) {
     .header-container {
         padding: 0 16px;
